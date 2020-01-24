@@ -3,7 +3,8 @@ const db = require("../db-config");
 module.exports = {
   getProjects,
   getProjectTasks,
-  insert
+  insert,
+  getProjectResources
 };
 
 function getProjects(id) {
@@ -11,12 +12,17 @@ function getProjects(id) {
   if (id) {
     query.where("projects.id", id).first();
 
-    const promises = [query, this.getProjectTasks(id)];
+    const promises = [
+      query,
+      this.getProjectTasks(id),
+      this.getProjectResources(id)
+    ];
     return Promise.all(promises).then(function(results) {
-      let [projects, tasks] = results;
+      let [projects, tasks, resources] = results;
 
       if (projects) {
         projects.tasks = tasks;
+        projects.resources = resources;
         return projects;
       } else {
         return null;
@@ -35,4 +41,9 @@ function insert(project) {
 
 function getProjectTasks(id) {
   return db("tasks").where("tasks.projectId", id);
+}
+function getProjectResources(id) {
+  return db("resources")
+    .join("project_resource", "project_resource.resourceId", "resources.id")
+    .where("project_resource.projectId", id);
 }
