@@ -4,7 +4,9 @@ module.exports = {
   getProjects,
   getProjectTasks,
   insert,
-  getProjectResources
+  getProjectResources,
+  insertResource,
+  getResources
 };
 
 function getProjects(id) {
@@ -38,12 +40,27 @@ function insert(project) {
     .insert(project, "id")
     .then(([id]) => this.getProjects(id));
 }
+function insertResource(resource, id) {
+  return db("project_resource")
+    .insert({ resourceId: resource, projectId: id })
+}
 
+function getResources(id) {
+  console.log(id)
+
+
+    return db("resources")
+    .join("project_resource", "resources.id", "project_resource.resourceId")
+    .where("project_resource.id",id)
+  
+  
+}
 function getProjectTasks(id) {
   return db("tasks").where("tasks.projectId", id);
 }
 function getProjectResources(id) {
   return db("resources")
     .join("project_resource", "project_resource.resourceId", "resources.id")
-    .where("project_resource.projectId", id);
+    .where("project_resource.projectId", id)
+    .select("resourceName", "resourceDescription", "resourceId");
 }
